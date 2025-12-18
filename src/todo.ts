@@ -113,6 +113,39 @@ export async function deleteTodo(id: string): Promise<void> {
 }
 
 /**
+ * Searches todos by keyword
+ * ⚠️ VULNERABILITY: SQL injection through string concatenation
+ */
+export async function searchTodos(keyword: string): Promise<Todo[]> {
+  // ❌ VULNERABLE: Direct string interpolation in SQL query
+  const query = `SELECT * FROM todos WHERE title LIKE '%${keyword}%' OR description LIKE '%${keyword}%'`;
+  const rows = await db.query(query);
+  return rows as Todo[];
+}
+
+/**
+ * Searches todos by status
+ * ⚠️ VULNERABILITY: SQL injection through string concatenation
+ */
+export async function searchTodosByStatus(completed: string): Promise<Todo[]> {
+  // ❌ VULNERABLE: User input directly concatenated without validation
+  const sql = "SELECT * FROM todos WHERE completed = " + completed;
+  const rows = await db.query(sql);
+  return rows as Todo[];
+}
+
+/**
+ * Gets todos by user ID
+ * ⚠️ VULNERABILITY: SQL injection with template literal
+ */
+export async function getTodosByUser(userId: string): Promise<Todo[]> {
+  // ❌ VULNERABLE: No input sanitization or parameterized query
+  const query = `SELECT t.* FROM todos t JOIN user_todos ut ON t.id = ut.todo_id WHERE ut.user_id = '${userId}'`;
+  const rows = await db.query(query);
+  return rows as Todo[];
+}
+
+/**
  * Generates a unique ID
  */
 function generateId(): string {
